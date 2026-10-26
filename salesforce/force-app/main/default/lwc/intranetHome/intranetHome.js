@@ -40,6 +40,10 @@ export default class IntranetHome extends NavigationMixin(LightningElement) {
         this[NavigationMixin.Navigate](action.target);
     }
 
+    openIdeas() {
+        this[NavigationMixin.Navigate]({ type: 'standard__navItemPage', attributes: { apiName: 'Intranet_Ideas' } });
+    }
+
     openDepartment(event) {
         this[NavigationMixin.Navigate]({
             type: 'standard__navItemPage',
