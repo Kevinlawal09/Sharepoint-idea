@@ -1,5 +1,5 @@
 /**
- * Emails active staff when a coworker shares a LIVE UNITED Moment, and sends the poster a
+ * Emails intranet users when a coworker shares a LIVE UNITED Moment, and sends the poster a
  * confirmation saying how many people were told. StoryController.publish() queues it so
  * posting stays fast.
  *
@@ -85,20 +85,25 @@ public without sharing class MomentAlerts implements Queueable {
         ].isEmpty();
     }
 
+    // Only people who can open the intranet are emailed, so nobody gets a link they can't use.
+    // Giving someone one of these permission sets opts them in.
+    private static final Set<String> ACCESS_SETS = new Set<String>{ 'Intranet_User', 'Intranet_Admin' };
+
     private List<User> recipients(Id posterId, Integer max) {
         if (afterUserId == null) {
             return [
                 SELECT Id FROM User
-                WHERE IsActive = true AND UserType = 'Standard' AND Moments_Email_Opt_Out__c = false
-                    AND Email != null AND Id != :posterId
+                WHERE IsActive = true AND Moments_Email_Opt_Out__c = false AND Email != null AND Id != :posterId
+                    AND Id IN (SELECT AssigneeId FROM PermissionSetAssignment WHERE PermissionSet.Name IN :ACCESS_SETS)
                 ORDER BY Id
                 LIMIT :max
             ];
         }
         return [
             SELECT Id FROM User
-            WHERE IsActive = true AND UserType = 'Standard' AND Moments_Email_Opt_Out__c = false
-                AND Email != null AND Id != :posterId AND Id > :afterUserId
+            WHERE IsActive = true AND Moments_Email_Opt_Out__c = false AND Email != null AND Id != :posterId
+                AND Id IN (SELECT AssigneeId FROM PermissionSetAssignment WHERE PermissionSet.Name IN :ACCESS_SETS)
+                AND Id > :afterUserId
             ORDER BY Id
             LIMIT :max
         ];
@@ -107,8 +112,8 @@ public without sharing class MomentAlerts implements Queueable {
     private static Integer countRecipients(Id posterId) {
         return [
             SELECT COUNT() FROM User
-            WHERE IsActive = true AND UserType = 'Standard' AND Moments_Email_Opt_Out__c = false
-                AND Email != null AND Id != :posterId
+            WHERE IsActive = true AND Moments_Email_Opt_Out__c = false AND Email != null AND Id != :posterId
+                AND Id IN (SELECT AssigneeId FROM PermissionSetAssignment WHERE PermissionSet.Name IN :ACCESS_SETS)
         ];
     }
 

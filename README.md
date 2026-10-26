@@ -39,7 +39,7 @@ custom objects), pulled from the TrailDev sandbox. The `UWPBC Intranet` app has 
 tabs: Home, Directory, Events, Ideas, Kudos, Files and Profile. Custom metadata *records*
 (for example the org chart) aren't in the repo because they hold staff data.
 
-**LIVE UNITED Moments email alerts.** When someone shares a Moment, every active Salesforce user
+**LIVE UNITED Moments email alerts.** When someone shares a Moment, everyone with intranet access (the Intranet User or Admin permission set)
 gets an email, except the poster and anyone who opted out (`MomentAlerts`, queued from
 `StoryController.publish()`). Each poster triggers at most one email a day: a second moment
 while the first is still live doesn't email everyone again. People turn alerts off and on with

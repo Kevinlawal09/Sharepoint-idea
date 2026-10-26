@@ -33,6 +33,8 @@ private class MomentAlertsTest {
         optedOut.Moments_Email_Opt_Out__c = true;
         departed.IsActive = false;
         update new List<User>{ optedOut, departed };
+        User noAccess = IntranetTestUtil.intranetUser('NoAccess');
+        delete [SELECT Id FROM PermissionSetAssignment WHERE AssigneeId = :noAccess.Id AND PermissionSet.Name = 'Intranet_User'];
 
         Test.startTest();
         System.runAs(poster) {
@@ -42,6 +44,7 @@ private class MomentAlertsTest {
 
         Set<Id> told = recipients();
         Assert.isTrue(told.contains(coworker.Id), 'Active coworkers get the email');
+        Assert.isFalse(told.contains(noAccess.Id), 'People without intranet access are skipped, so no broken links');
         Assert.isFalse(told.contains(optedOut.Id), 'People who opted out are skipped');
         Assert.isFalse(told.contains(departed.Id), 'Inactive users are skipped');
 
