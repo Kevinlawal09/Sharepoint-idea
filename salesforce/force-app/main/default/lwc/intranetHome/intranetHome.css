@@ -1,5 +1,37 @@
 @import 'c/intranetStyles';
 
+/* Quiet maker's mark at the bottom of the page. */
+.credit {
+    padding: 8px 0 4px;
+    color: var(--uw-muted);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.credit strong {
+    color: var(--uw-ink);
+    font-weight: 700;
+}
+
+.credit__link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--uw-blue);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.credit__link:hover {
+    text-decoration: underline;
+}
+
+.credit__link:focus-visible {
+    outline: 2px solid var(--uw-gold);
+    outline-offset: 2px;
+}
+
 /* Deep-sea to United Way blue to ocean teal, with a sunrise glow and waves along the bottom. */
 .hero {
     position: relative;
