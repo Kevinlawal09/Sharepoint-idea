@@ -40,6 +40,15 @@ export default class IntranetHome extends NavigationMixin(LightningElement) {
         this[NavigationMixin.Navigate](action.target);
     }
 
+    // By name rather than user Id, so the link works in every org.
+    openBuilder() {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__navItemPage',
+            attributes: { apiName: 'Intranet_Directory' },
+            state: { c__search: 'Kevin Lawal' }
+        });
+    }
+
     openIdeas() {
         this[NavigationMixin.Navigate]({ type: 'standard__navItemPage', attributes: { apiName: 'Intranet_Ideas' } });
     }

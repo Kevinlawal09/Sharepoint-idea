@@ -8,9 +8,8 @@
     text-align: center;
 }
 
-.credit strong {
+.credit__name {
     color: var(--uw-ink);
-    font-weight: 700;
 }
 
 .credit__link {

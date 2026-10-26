@@ -1,5 +1,5 @@
 import { LightningElement, wire } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
+import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import getStaff from '@salesforce/apex/DirectoryController.getStaff';
 import { errorMessage } from 'c/intranetUtils';
 
@@ -12,6 +12,15 @@ export default class StaffDirectory extends NavigationMixin(LightningElement) {
     view = 'directory';
     error;
     isLoading = true;
+
+    /** Other pages can open the directory pre-filtered with ?c__search=... */
+    @wire(CurrentPageReference)
+    handlePageRef(pageRef) {
+        const search = pageRef?.state?.c__search;
+        if (search) {
+            this.search = search;
+        }
+    }
 
     @wire(getStaff)
     handleStaff({ data, error }) {
