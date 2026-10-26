@@ -150,11 +150,34 @@ public without sharing class MomentAlerts implements Queueable {
         return message;
     }
 
+    // Setup > Organization-Wide Addresses: a verified address with this display name becomes the
+    // sender. Without one, emails come from the poster's own address.
+    private static final String SENDER_NAME = 'LIVE UNITED Moments';
+    private static Id senderId;
+    private static Boolean senderLooked = false;
+
+    private static Id orgWideSender() {
+        if (!senderLooked) {
+            senderLooked = true;
+            List<OrgWideEmailAddress> senders = [
+                SELECT Id FROM OrgWideEmailAddress WHERE DisplayName = :SENDER_NAME LIMIT 1
+            ];
+            senderId = senders.isEmpty() ? null : senders[0].Id;
+        }
+        return senderId;
+    }
+
     private static Messaging.SingleEmailMessage base(Id recipientId) {
         Messaging.SingleEmailMessage message = new Messaging.SingleEmailMessage();
         message.setTargetObjectId(recipientId);
         message.setSaveAsActivity(false);
-        message.setSenderDisplayName('LIVE UNITED Moments');
+        // Salesforce allows a shared sender or a display name, not both.
+        Id sender = orgWideSender();
+        if (sender != null) {
+            message.setOrgWideEmailAddressId(sender);
+        } else {
+            message.setSenderDisplayName(SENDER_NAME);
+        }
         return message;
     }
 
