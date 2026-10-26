@@ -8,16 +8,36 @@ function setUser(name){ try{ localStorage.setItem(USER_KEY, name); }catch(e){} }
 function clearUser(){ try{ localStorage.removeItem(USER_KEY); }catch(e){} }
 let CURRENT_USER = getUser();
 
+/* ---------- Microsoft 365 (when the server is configured, sign-in replaces the name gate) ---------- */
+let AUTH = { configured:false, signedIn:false, user:null, directory:false, events:false };
+async function fetchAuth(){
+  try{ const r = await fetch('/auth/status'); AUTH = await r.json(); }catch(e){}
+  if(AUTH.configured) CURRENT_USER = AUTH.signedIn ? AUTH.user.name : '';
+}
+
 /* ---------- server-backed state ---------- */
 let KUDOS = [];
 let IDEAS = [];
 let EVENTS = [];
 let TICKETS = [];
 let PTO = [];
+let EVENTS_NOTICE = '';
+let DIRECTORY = STAFF;
+let DIRECTORY_LIVE = false;
+let DIRECTORY_ERROR = '';
 
 async function fetchKudos(){ const r = await fetch('/api/kudos'); const d = await r.json(); KUDOS = d.kudos || []; }
 async function fetchIdeas(){ const r = await fetch('/api/ideas'); const d = await r.json(); IDEAS = d.ideas || []; }
-async function fetchEvents(){ const r = await fetch('/api/events'); const d = await r.json(); EVENTS = d.events || []; }
+async function fetchEvents(){ const r = await fetch('/api/events'); const d = await r.json(); EVENTS = d.events || []; EVENTS_NOTICE = d.notice || ''; }
+async function fetchDirectory(){
+  DIRECTORY = STAFF; DIRECTORY_LIVE = false; DIRECTORY_ERROR = '';
+  if(!AUTH.directory || !AUTH.signedIn) return;
+  try{
+    const r = await fetch('/api/directory'); const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'request failed');
+    DIRECTORY = d.people; DIRECTORY_LIVE = true;
+  }catch(e){ DIRECTORY_ERROR = e.message; }
+}
 async function fetchTickets(){ const r = await fetch('/api/tickets?user='+encodeURIComponent(CURRENT_USER)); const d = await r.json(); TICKETS = d.tickets || []; }
 async function fetchPto(){ const r = await fetch('/api/pto?user='+encodeURIComponent(CURRENT_USER)); const d = await r.json(); PTO = d.pto || []; }
 
@@ -90,18 +110,31 @@ function topbarHtml(r){
   '</div>';
 }
 function whoamiHtml(){
-  return '<div class="whoami">Signed in as <b>'+escapeHtml(CURRENT_USER)+'</b> &middot; <button onclick="switchUser()">not you?</button></div>';
+  return '<div class="whoami">Signed in as <b>'+escapeHtml(CURRENT_USER)+'</b> &middot; <button onclick="switchUser()">'+(AUTH.configured?'sign out':'not you?')+'</button></div>';
 }
 function footerHtml(){
   return '<footer>'+
-    '<span>Local concept prototype &middot; data stored in intranet-prototype/data/db.json on this machine</span>'+
+    '<span>'+(AUTH.configured?'Connected to Microsoft 365 &middot; kudos, ideas, and requests':'Local concept prototype &middot; data')+' stored in intranet-prototype/data/db.json on this machine</span>'+
     '<span><a href="#" onclick="nav(\'tickets\'); return false;">IT Help Desk</a> &middot; <a href="#" onclick="nav(\'directory\'); return false;">Contact HR</a></span>'+
   '</footer>';
 }
-function switchUser(){ clearUser(); CURRENT_USER=''; render(); }
+function switchUser(){
+  if(AUTH.configured){ location.href = '/auth/logout'; return; }
+  clearUser(); CURRENT_USER=''; render();
+}
 
 /* ---------- name gate ---------- */
 function renderNameGate(){
+  if(AUTH.configured){
+    document.getElementById('app').innerHTML =
+      '<div class="namegate">'+
+        '<div class="mark"><img src="/logo.png" alt="United Way of Palm Beach County"></div>'+
+        '<h1>Welcome to the UWPBC Intranet</h1>'+
+        '<p>Sign in with your UWPBC Microsoft 365 account to see the staff directory, upcoming events, and your personalized homepage.</p>'+
+        '<a class="btn gold" href="/auth/login">Sign in with Microsoft</a>'+
+      '</div>';
+    return;
+  }
   document.getElementById('app').innerHTML =
     '<div class="namegate">'+
       '<div class="mark"><img src="/logo.png" alt="United Way of Palm Beach County"></div>'+
@@ -158,13 +191,14 @@ function ideaRowHtml(idea){
   '</div>';
 }
 function eventCardHtml(ev){
-  const going = ev.rsvps && ev.rsvps.indexOf(CURRENT_USER) >= 0;
+  const going = typeof ev.going === 'boolean' ? ev.going : (ev.rsvps && ev.rsvps.indexOf(CURRENT_USER) >= 0);
+  const label = ev.outlook ? (going ? "Going &middot; in your Outlook" : 'RSVP &amp; add to Outlook') : (going ? "You're going" : 'RSVP');
   return '<div class="card event-card">'+
     '<div class="date-badge" style="background:var(--blue)"><span class="mon">'+escapeHtml(ev.month)+'</span><span class="day">'+escapeHtml(ev.day)+'</span></div>'+
     '<div style="display:flex; flex-direction:column; gap:6px; flex:1;">'+
       '<h4 style="font-size:.94rem;">'+escapeHtml(ev.title)+'</h4>'+
       '<span class="event-meta">'+ICONS.pin+' '+escapeHtml(ev.detail)+'</span>'+
-      '<button class="btn small '+(going?'ghost':'')+'" style="align-self:flex-start; margin-top:2px;" onclick="toggleRsvp(\''+ev.id+'\')">'+(going?"You're going":'RSVP')+'</button>'+
+      '<button class="btn small '+(going?'ghost':'')+'" style="align-self:flex-start; margin-top:2px;" onclick="toggleRsvp(\''+escapeHtml(ev.id)+'\', this)">'+label+'</button>'+
       '<span class="rsvp-count">'+(ev.rsvps?ev.rsvps.length:0)+' going</span>'+
     '</div>'+
   '</div>';
@@ -293,35 +327,47 @@ async function voteIdea(id){
 
 function renderEventsPage(){
   const cards = EVENTS.map(eventCardHtml).join('');
+  const live = EVENTS.length && EVENTS[0].outlook;
+  const sub = EVENTS_NOTICE ? escapeHtml(EVENTS_NOTICE)
+    : live ? 'From the shared UWPBC Outlook calendar &mdash; RSVP and the event is added to your own Outlook.'
+    : 'Mark your calendar &mdash; RSVP so we can plan headcount.';
   return '<div class="crumbs"><button onclick="nav(\'\')">Home</button><span class="sep">/</span><span>Events</span></div>'+
-  '<div style="margin-bottom:26px;"><h1>Upcoming Events</h1><p style="color:var(--muted); margin-top:6px;">Mark your calendar &mdash; RSVP so we can plan headcount.</p></div>'+
+  '<div style="margin-bottom:26px;"><h1>Upcoming Events</h1><p style="color:var(--muted); margin-top:6px;">'+sub+'</p></div>'+
   '<div class="grid3">'+(cards || '<div class="empty-state">No upcoming events.</div>')+'</div>';
 }
-async function toggleRsvp(id){
-  await postJson('/api/events/rsvp', { id, user: CURRENT_USER });
+async function toggleRsvp(id, btn){
+  if(btn){ btn.disabled = true; btn.textContent = 'Updating...'; } // Outlook round trips take a second
+  const d = await postJson('/api/events/rsvp', { id, user: CURRENT_USER });
+  if(d && d.error) alert("Couldn't update your RSVP: " + d.error);
   await render();
 }
 
 function renderDirectoryPage(){
+  const sub = DIRECTORY_LIVE ? 'Live from Microsoft 365 &middot; '+DIRECTORY.length+' people'+(AUTH.fullDirectory?'':' &middot; titles and departments appear once IT approves full directory access')
+    : DIRECTORY_ERROR ? "Couldn't load the Microsoft 365 directory ("+escapeHtml(DIRECTORY_ERROR)+') &mdash; showing sample data.'
+    : 'Sample directory for this concept &mdash; not real staff records.';
   return '<div class="crumbs"><button onclick="nav(\'\')">Home</button><span class="sep">/</span><span>Org Directory</span></div>'+
-  '<div style="margin-bottom:20px;"><h1>Org Directory</h1><p style="color:var(--muted); margin-top:6px;">Sample directory for this concept &mdash; not real staff records.</p></div>'+
+  '<div style="margin-bottom:20px;"><h1>Org Directory</h1><p style="color:var(--muted); margin-top:6px;">'+sub+'</p></div>'+
   '<div class="search-wrap">'+ICONS.search+'<input type="text" id="staff-search" placeholder="Search by name, role, or department..." oninput="filterDirectory(this.value)"></div>'+
-  '<div class="card list-card" id="staff-list">'+staffRowsHtml(STAFF)+'</div>';
+  '<div class="card list-card" id="staff-list">'+staffRowsHtml(DIRECTORY)+'</div>';
 }
 function staffRowsHtml(list){
   if(!list.length) return '<div class="empty-state">No matches.</div>';
   return list.map(function(p){
+    // live entries have an Entra id: lay their photo over the initials (it removes itself if they have none)
+    const photo = p.id ? '<img src="/api/directory/photo/'+encodeURIComponent(p.id)+'" alt="" loading="lazy" onerror="this.remove()">' : '';
+    const email = p.email ? '<a href="mailto:'+escapeHtml(p.email)+'">'+escapeHtml(p.email)+'</a>' : '';
     return '<div class="list-row staff-row">'+
-      '<div class="initials" style="background:'+avatarColor(p.name)+'">'+initials(p.name)+'</div>'+
+      '<div class="initials" style="background:'+avatarColor(p.name)+'">'+initials(p.name)+photo+'</div>'+
       '<div class="who"><b>'+escapeHtml(p.name)+'</b><span>'+escapeHtml(p.role)+'</span></div>'+
-      '<div class="dept">'+escapeHtml(p.dept)+'<br>'+escapeHtml(p.email)+'</div>'+
+      '<div class="dept">'+escapeHtml(p.dept)+'<br>'+email+(p.phone?'<br>'+escapeHtml(p.phone):'')+'</div>'+
     '</div>';
   }).join('');
 }
 function filterDirectory(q){
   const query = (q||'').toLowerCase();
-  const filtered = STAFF.filter(function(p){
-    return (p.name+' '+p.role+' '+p.dept).toLowerCase().indexOf(query) >= 0;
+  const filtered = DIRECTORY.filter(function(p){
+    return (p.name+' '+p.role+' '+p.dept+' '+(p.email||'')).toLowerCase().indexOf(query) >= 0;
   });
   const holder = document.getElementById('staff-list');
   if(holder) holder.innerHTML = staffRowsHtml(filtered);
@@ -405,7 +451,7 @@ async function render(){
   else if(r.view==='kudos'){ await fetchKudos(); body = renderKudosPage(); }
   else if(r.view==='ideas'){ await fetchIdeas(); body = renderIdeasPage(); }
   else if(r.view==='events'){ await fetchEvents(); body = renderEventsPage(); }
-  else if(r.view==='directory'){ body = renderDirectoryPage(); }
+  else if(r.view==='directory'){ await fetchDirectory(); body = renderDirectoryPage(); }
   else if(r.view==='tickets'){ await fetchTickets(); body = renderTicketsPage(); }
   else if(r.view==='pto'){ await fetchPto(); body = renderPtoPage(); }
   else { await Promise.all([fetchKudos(), fetchIdeas(), fetchEvents()]); body = renderHome(); }
@@ -426,6 +472,6 @@ window.filterDirectory = filterDirectory;
 window.toggleAssistant = toggleAssistant;
 window.addEventListener('hashchange', render);
 initAssistantBubble();
-render();
+fetchAuth().then(render);
 
 })();

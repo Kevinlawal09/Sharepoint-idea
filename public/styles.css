@@ -153,7 +153,9 @@ button{ font-family:inherit; }
 .search-wrap svg{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--muted); }
 .search-wrap input{ width:100%; padding:11px 14px 11px 40px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:.92rem; }
 .staff-row{ display:flex; align-items:center; gap:12px; padding:14px 16px; }
-.staff-row .initials{ width:38px; height:38px; border-radius:50%; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.78rem; flex:none; }
+.staff-row .initials{ width:38px; height:38px; border-radius:50%; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.78rem; flex:none; position:relative; overflow:hidden; }
+.staff-row .initials img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.staff-row .dept a{ color:inherit; }
 .staff-row .who b{ display:block; font-size:.92rem; }
 .staff-row .who span{ font-size:.8rem; color:var(--muted); }
 .staff-row .dept{ margin-left:auto; font-size:.76rem; color:var(--muted); text-align:right; }

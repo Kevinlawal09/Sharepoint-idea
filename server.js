@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const microsoft = require('./microsoft'); // loads .env, so it comes before PORT is read
 
 const PORT = process.env.PORT || 4100;
 const DATA_DIR = path.join(__dirname, 'data');
@@ -29,7 +30,8 @@ const SEED = {
     { id: 'e3', month: 'Oct', day: '8', title: 'Benefits Open Enrollment Fair', detail: '11:00 AM · Main Office', rsvps: [] }
   ],
   tickets: [],
-  pto: []
+  pto: [],
+  msRsvps: {} // RSVPs to real Outlook events: { eventId: { userId: { name, outlookEventId } } }
 };
 
 function ensureDb() {
@@ -84,12 +86,12 @@ function serveStatic(req, res, urlPath) {
 }
 
 function readBody(req) {
+  if (req.parsedBody) return Promise.resolve(req.parsedBody); // already read by microsoft.js
   return new Promise((resolve, reject) => {
     let data = '';
     req.on('data', (chunk) => { data += chunk; if (data.length > 1e6) req.destroy(); });
     req.on('end', () => {
-      if (!data) return resolve({});
-      try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
+      try { req.parsedBody = data ? JSON.parse(data) : {}; resolve(req.parsedBody); } catch (e) { reject(e); }
     });
     req.on('error', reject);
   });
@@ -98,6 +100,9 @@ function readBody(req) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const pathname = url.pathname;
+
+  // Microsoft sign-in, live directory, and Outlook events (no-op unless configured)
+  if (await microsoft.handle(req, res, url, { sendJson, readBody, readDb, writeDb })) return;
 
   // ---- kudos ----
   if (pathname === '/api/kudos' && req.method === 'GET') {
@@ -221,4 +226,7 @@ ensureDb();
 server.listen(PORT, () => {
   console.log('UWPBC Intranet concept running at http://localhost:' + PORT);
   console.log('Data file: ' + DB_PATH);
+  console.log(microsoft.CONFIGURED
+    ? 'Microsoft 365: connected (tenant ' + microsoft.CFG.tenant + ')' + (microsoft.CFG.eventsCalendar ? ', events from ' + microsoft.CFG.eventsCalendar : ', no shared events calendar set')
+    : 'Microsoft 365: not configured — using sample directory and events (see MICROSOFT-SETUP.md)');
 });

@@ -24,6 +24,14 @@ idea votes, RSVPs, tickets, and PTO requests can be attributed to you. Progress 
 shared across anyone who opens this URL on your machine or network, the same way
 the training prototype works.
 
+## Connect to Microsoft 365 (optional)
+
+With a `.env` file holding an Entra app registration, the name screen becomes
+**Sign in with Microsoft**. The Org Directory then shows real staff (with photos),
+and Events come from a shared Outlook calendar, where RSVP adds the event to your
+own Outlook. Setup steps are in [MICROSOFT-SETUP.md](MICROSOFT-SETUP.md). Without a
+`.env`, everything runs on sample data as described below.
+
 ## What's real vs. illustrative
 
 - **Fully functional:** navigation between every page, the kudos wall (post + star),
@@ -38,6 +46,8 @@ the training prototype works.
 | File | Purpose |
 |---|---|
 | `server.js` | Zero-dependency Node HTTP server — static files + a small JSON API |
+| `microsoft.js` | Optional Microsoft 365 connection: sign-in, live directory, Outlook events (Microsoft Graph) |
+| `.env.example` | Template for the Microsoft settings — copy to `.env` (gitignored) |
 | `data/db.json` | Auto-created on first run; stores kudos, ideas, event RSVPs, tickets, PTO requests |
 | `public/content.js` | Static content: departments, news, staff directory, icons |
 | `public/app.js` | Client-side hash-routed app — all page rendering and interactions |
