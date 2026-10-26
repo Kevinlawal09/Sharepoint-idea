@@ -1,0 +1,265 @@
+/*
+ * Shared UWPBC design tokens and components: United Way blue, gold and red as the brand
+ * anchors, with a Palm Beach "tech beach" layer (ocean teal, deep-sea navy, sand, coral).
+ * Import at the top of a component stylesheet:  @import 'c/intranetStyles';
+ */
+:host {
+    /* United Way brand */
+    --uw-blue: #1b4f9e;
+    --uw-blue-deep: #123b7a;
+    --uw-gold: #f5a623;
+    --uw-gold-deep: #d98e12;
+    --uw-red: #e31b23;
+
+    /* Palm Beach coast */
+    --uw-navy: #0a2540;
+    --uw-ocean: #0e7c86;
+    --uw-aqua: #2ec4c7;
+    --uw-sand: #f7f1e6;
+    --uw-sand-deep: #ece2cf;
+    --uw-coral: #ff7a59;
+
+    /* Roles */
+    --uw-ink: #0f2742;
+    --uw-muted: #4f6170;
+    --uw-line: rgba(10, 37, 64, 0.1);
+    --uw-surface: rgba(255, 255, 255, 0.82);
+    --uw-paper: #ffffff;
+    --uw-paper-2: var(--uw-sand);
+    --uw-green: #1c8a4f;
+    --uw-track: var(--uw-sand-deep);
+    --uw-shadow: 0 1px 2px rgba(10, 37, 64, 0.06), 0 12px 32px rgba(14, 124, 134, 0.1);
+    --uw-radius: 20px;
+    --uw-sunrise: linear-gradient(135deg, var(--uw-gold) 0%, var(--uw-coral) 45%, var(--uw-aqua) 100%);
+    --uw-tide: linear-gradient(90deg, var(--uw-aqua), var(--uw-gold));
+
+    display: block;
+    color: var(--uw-ink);
+    font-family: ui-sans-serif, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+.uw-page {
+    display: grid;
+    gap: 28px;
+    padding: 24px;
+    background:
+        radial-gradient(1200px 400px at 100% 0%, rgba(46, 196, 199, 0.12), transparent 60%),
+        linear-gradient(180deg, var(--uw-sand) 0%, #eef7f6 100%);
+    border-radius: var(--uw-radius);
+}
+
+.uw-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.uw-title {
+    margin: 0;
+    color: var(--uw-navy);
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+/* Section headings get a short ocean-to-gold "tide line" underneath. */
+.uw-section-title {
+    margin: 0 0 14px;
+    color: var(--uw-navy);
+    font-size: 1.125rem;
+    font-weight: 800;
+}
+
+.uw-section-title::after {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 3px;
+    margin-top: 6px;
+    border-radius: 3px;
+    background: var(--uw-tide);
+}
+
+.uw-muted {
+    margin: 4px 0 0;
+    color: var(--uw-muted);
+}
+
+.uw-meta {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--uw-muted);
+}
+
+/* Frosted-glass card over the sand background. */
+.uw-card {
+    padding: 20px;
+    background: var(--uw-surface);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: var(--uw-radius);
+    box-shadow: var(--uw-shadow);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+.uw-card__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--uw-ink);
+}
+
+.uw-stack {
+    display: grid;
+    gap: 12px;
+}
+
+.uw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+/* Buttons: pill, uppercase, heavy, like the prototype's .btn */
+.uw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.6rem 1.1rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--uw-blue);
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.uw-btn:hover {
+    background: var(--uw-blue-deep);
+}
+
+.uw-btn:focus-visible,
+.uw-tile:focus-visible {
+    outline: 3px solid var(--uw-gold);
+    outline-offset: 2px;
+}
+
+.uw-btn[disabled] {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.uw-btn_gold {
+    background: var(--uw-gold);
+    color: var(--uw-ink);
+}
+
+.uw-btn_gold:hover {
+    background: var(--uw-gold-deep);
+}
+
+.uw-btn_ghost {
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--uw-blue);
+    box-shadow: inset 0 0 0 1px rgba(27, 79, 158, 0.25);
+}
+
+.uw-btn_ghost:hover {
+    background: var(--uw-paper-2);
+}
+
+.uw-btn_active,
+.uw-btn_active:hover {
+    background: var(--uw-blue);
+    color: #ffffff;
+    box-shadow: none;
+}
+
+.uw-btn_small {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.6875rem;
+}
+
+/* Clickable card */
+.uw-tile {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.uw-tile:hover {
+    transform: translateY(-2px);
+    border-color: var(--uw-aqua);
+    box-shadow: 0 1px 2px rgba(10, 37, 64, 0.06), 0 16px 36px rgba(14, 124, 134, 0.18);
+}
+
+.uw-badge {
+    display: inline-block;
+    justify-self: start;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(46, 196, 199, 0.14);
+    color: #0b5f66;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.uw-badge_gold {
+    background: #fff4df;
+    color: #8a5a00;
+}
+
+.uw-badge_green {
+    background: #e3f4ea;
+    color: var(--uw-green);
+}
+
+.uw-badge_muted {
+    background: var(--uw-track);
+    color: var(--uw-muted);
+}
+
+.uw-empty {
+    margin: 0;
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--uw-muted);
+}
+
+.uw-error {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #fdecec;
+    color: #a3141a;
+}
+
+.uw-spinner {
+    position: relative;
+    min-height: 96px;
+}
+
+@media (max-width: 640px) {
+    .uw-page {
+        padding: 16px;
+        gap: 20px;
+    }
+
+    .uw-title {
+        font-size: 1.35rem;
+    }
+}

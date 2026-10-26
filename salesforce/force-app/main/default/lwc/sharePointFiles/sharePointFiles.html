@@ -1,0 +1,97 @@
+<template>
+    <div class="uw-page">
+        <header class="uw-header">
+            <div>
+                <h1 class="uw-title">{title}</h1>
+                <p class="uw-muted">Files from SharePoint, without leaving Salesforce.</p>
+            </div>
+            <template lwc:if={isBrowsing}>
+                <lightning-input
+                    class="search"
+                    type="search"
+                    label="Filter this folder"
+                    variant="label-hidden"
+                    placeholder="Filter by name"
+                    value={search}
+                    onchange={handleSearch}
+                ></lightning-input>
+            </template>
+        </header>
+
+        <template lwc:if={showDepartmentPicker}>
+            <nav class="pills" aria-label="Departments">
+                <template for:each={departmentPills} for:item="pill">
+                    <button key={pill.key} class={pill.className} data-id={pill.id} aria-pressed={pill.pressed} onclick={selectDepartment}>
+                        {pill.name}
+                    </button>
+                </template>
+            </nav>
+        </template>
+
+        <template lwc:if={isBrowsing}>
+            <nav class="crumbs" aria-label="Folder path">
+                <button class="crumb" data-index="-1" onclick={goToCrumb}>All locations</button>
+                <template for:each={crumbs} for:item="crumb">
+                    <span key={crumb.key} class="crumbs__item">
+                        <span class="crumbs__sep" aria-hidden="true">/</span>
+                        <template lwc:if={crumb.isLast}>
+                            <span class="crumbs__current" aria-current="page">{crumb.label}</span>
+                        </template>
+                        <template lwc:else>
+                            <button class="crumb" data-index={crumb.index} onclick={goToCrumb}>{crumb.label}</button>
+                        </template>
+                    </span>
+                </template>
+            </nav>
+        </template>
+
+        <template lwc:if={error}>
+            <p class="uw-error" role="alert">{error}</p>
+        </template>
+
+        <template lwc:if={isLoading}>
+            <div class="uw-spinner">
+                <lightning-spinner alternative-text="Loading files" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:if={showLocations}>
+            <template lwc:if={hasLocations}>
+                <div class="uw-grid">
+                    <template for:each={locations} for:item="loc">
+                        <button key={loc.id} class="uw-card uw-tile location" data-id={loc.id} onclick={openLocation}>
+                            <lightning-icon icon-name="doctype:folder" size="medium" alternative-text=""></lightning-icon>
+                            <span class="uw-card__title">{loc.label}</span>
+                            <template lwc:if={loc.category}>
+                                <span class="uw-meta">{loc.category}</span>
+                            </template>
+                        </button>
+                    </template>
+                </div>
+            </template>
+            <template lwc:else>
+                <p class="uw-empty">No SharePoint locations are set up for this department yet.</p>
+            </template>
+        </template>
+
+        <template lwc:if={showItems}>
+            <template lwc:if={hasItems}>
+                <ul class="uw-card files" aria-label="Folder contents">
+                    <template for:each={visibleItems} for:item="item">
+                        <li key={item.id} class="files__row">
+                            <button class="file" data-id={item.id} onclick={openItem} title={item.actionTitle}>
+                                <lightning-icon icon-name={item.icon} size="small" alternative-text={item.kind}></lightning-icon>
+                                <span class="file__name">{item.name}</span>
+                                <span class="uw-meta file__info">{item.info}</span>
+                                <lightning-icon icon-name={item.actionIcon} size="xx-small" alternative-text="" class="file__action"></lightning-icon>
+                            </button>
+                        </li>
+                    </template>
+                </ul>
+            </template>
+            <template lwc:else>
+                <p class="uw-empty">{emptyMessage}</p>
+            </template>
+        </template>
+    </div>
+</template>

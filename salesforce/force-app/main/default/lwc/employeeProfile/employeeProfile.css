@@ -1,0 +1,162 @@
+@import 'c/intranetStyles';
+
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--uw-sunrise);
+}
+
+.hero__photo {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    border: 4px solid var(--uw-paper-2);
+    object-fit: cover;
+    background: var(--uw-paper-2);
+}
+
+.hero__body {
+    display: grid;
+    gap: 6px;
+    flex: 1 1 280px;
+}
+
+.hero__title {
+    margin: 0;
+    color: var(--uw-muted);
+    font-size: 1.0625rem;
+}
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.hero__actions a {
+    text-decoration: none;
+}
+
+.initials {
+    display: grid;
+    place-items: center;
+    background: var(--uw-track);
+    color: var(--uw-blue-deep);
+    font-weight: 800;
+}
+
+.initials_large {
+    font-size: 2.5rem;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.subhead {
+    margin: 4px 0 0;
+    color: var(--uw-muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.about {
+    margin: 0;
+    line-height: 1.55;
+    white-space: pre-line;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.person {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    padding: 8px;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.person:hover {
+    background: var(--uw-paper-2);
+}
+
+.person:focus-visible {
+    outline: 3px solid var(--uw-gold);
+    outline-offset: 1px;
+}
+
+.person__photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.person__name {
+    display: block;
+    font-weight: 800;
+}
+
+.person__title {
+    display: block;
+}
+
+.kudos {
+    margin: 0;
+    padding: 12px 16px;
+    border-left: 4px solid var(--uw-gold);
+    border-radius: 8px;
+    background: var(--uw-paper-2);
+}
+
+.kudos__message {
+    margin: 0 0 4px;
+    white-space: pre-line;
+}
+
+@media (max-width: 640px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero__body {
+        justify-items: center;
+    }
+
+    .hero__actions {
+        justify-content: center;
+    }
+}

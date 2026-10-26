@@ -1,0 +1,243 @@
+<template>
+    <section class="uw-card stories" aria-labelledby="stories-heading">
+        <div class="stories__header">
+            <h2 id="stories-heading" class="uw-section-title stories__title">
+                <span class="stories__brand">LIVE UNITED</span> Moments
+            </h2>
+            <span class="uw-meta">{subtitle}</span>
+            <template lwc:if={showEmailToggle}>
+                <lightning-input
+                    type="toggle"
+                    class="stories__email"
+                    label="Email me about new moments"
+                    checked={emailsOn}
+                    message-toggle-active=""
+                    message-toggle-inactive=""
+                    onchange={handleEmailToggle}
+                ></lightning-input>
+            </template>
+        </div>
+
+        <template lwc:if={error}>
+            <p class="uw-error" role="alert">{error}</p>
+        </template>
+
+        <ul class="rings" aria-label="Moments from your coworkers">
+            <template lwc:if={showAddStory}>
+                <li>
+                    <button class="bubble" onclick={openComposer} disabled={isCreatingDraft}>
+                        <span class="ring ring_add" aria-hidden="true">
+                            <lightning-icon icon-name="utility:add" size="small" alternative-text="" class="ring__plus"></lightning-icon>
+                        </span>
+                        <span class="bubble__label">Add moment</span>
+                    </button>
+                </li>
+            </template>
+            <template for:each={authors} for:item="author" for:index="index">
+                <li key={author.authorId}>
+                    <button class="bubble" data-index={index} onclick={openViewer} aria-label={author.ariaLabel}>
+                        <span class={author.ringClass} aria-hidden="true">
+                            <img class="ring__photo" src={author.photoUrl} alt="" />
+                        </span>
+                        <span class="bubble__label">{author.label}</span>
+                    </button>
+                </li>
+            </template>
+        </ul>
+        <template lwc:if={isEmpty}>
+            <p class="uw-meta stories__empty">{emptyMessage}</p>
+        </template>
+    </section>
+
+    <!-- Composer -->
+    <template lwc:if={isComposerOpen}>
+        <section role="dialog" aria-modal="true" aria-labelledby="composer-heading" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container composer">
+                <div class="slds-modal__header">
+                    <h2 id="composer-heading" class="slds-modal__title">Share a LIVE UNITED Moment</h2>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium uw-stack">
+                    <lightning-input
+                        label="Caption (optional)"
+                        value={caption}
+                        max-length="255"
+                        placeholder="What's happening?"
+                        onchange={handleCaption}
+                    ></lightning-input>
+                    <template lwc:if={isCameraOpen}>
+                        <div class="camera">
+                            <template lwc:if={capture}>
+                                <template lwc:if={capture.isPhoto}>
+                                    <img class="camera__view" src={capture.dataUrl} alt="Your photo" />
+                                </template>
+                                <template lwc:elseif={capture.previewUrl}>
+                                    <video
+                                        class="camera__view"
+                                        src={capture.previewUrl}
+                                        controls
+                                        autoplay
+                                        loop
+                                        playsinline
+                                        aria-label="Preview of your video"
+                                        onerror={handlePreviewError}
+                                    ></video>
+                                </template>
+                                <template lwc:else>
+                                    <div class="camera__view camera__summary">
+                                        <lightning-icon icon-name="utility:video" size="medium" variant="inverse" alternative-text=""></lightning-icon>
+                                        <span>Video recorded ({capture.seconds}s)</span>
+                                    </div>
+                                </template>
+                            </template>
+                            <template lwc:else>
+                                <video class="camera__view camera__view_live" lwc:ref="preview" autoplay playsinline muted></video>
+                                <template lwc:if={isRecording}>
+                                    <span class="camera__rec" role="status">● Recording · {recordSecondsLeft}s left</span>
+                                </template>
+                            </template>
+                        </div>
+                        <div class="camera__controls">
+                            <template lwc:if={capture}>
+                                <button class="uw-btn uw-btn_ghost" onclick={retake} disabled={isPublishing}>Retake</button>
+                                <button class="uw-btn uw-btn_gold" onclick={postCapture} disabled={isPublishing}>Post moment</button>
+                            </template>
+                            <template lwc:else>
+                                <template lwc:if={isRecording}>
+                                    <button class="uw-btn uw-btn_gold" onclick={stopRecording}>Stop</button>
+                                </template>
+                                <template lwc:else>
+                                    <button class="uw-btn uw-btn_gold" onclick={takePhoto} disabled={isCameraStarting}>Take photo</button>
+                                    <template lwc:if={canRecord}>
+                                        <button class="uw-btn" onclick={startRecording} disabled={isCameraStarting}>Record video</button>
+                                    </template>
+                                    <button class="uw-btn uw-btn_ghost" onclick={switchCamera} disabled={isCameraStarting}>Switch camera</button>
+                                    <button class="uw-btn uw-btn_ghost" onclick={closeCamera}>Back</button>
+                                </template>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <button class="uw-btn uw-btn_gold camera__open" onclick={openCamera} disabled={isPublishing}>
+                            <lightning-icon icon-name="utility:photo" size="x-small" alternative-text=""></lightning-icon>
+                            Use camera
+                        </button>
+                        <lightning-file-upload
+                            label="Or upload a photo or video"
+                            name="storyMedia"
+                            accept={acceptedFormats}
+                            record-id={draftId}
+                            onuploadfinished={handleUploadFinished}
+                            disabled={isPublishing}
+                        ></lightning-file-upload>
+                        <p class="uw-meta">Camera videos can be up to 15 seconds. Uploaded photos (JPG, PNG, GIF, WebP) or videos up to about 30 seconds (50 MB) post as soon as the upload finishes.</p>
+                    </template>
+                    <template lwc:if={isPublishing}>
+                        <div class="uw-spinner">
+                            <lightning-spinner alternative-text="Posting your moment" size="small"></lightning-spinner>
+                        </div>
+                    </template>
+                </div>
+                <div class="slds-modal__footer">
+                    <button class="uw-btn uw-btn_ghost" onclick={cancelComposer} disabled={isPublishing}>Cancel</button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </template>
+
+    <!-- Full-screen viewer -->
+    <template lwc:if={isViewerOpen}>
+        <div class="viewer" role="dialog" aria-modal="true" aria-label={viewerLabel} tabindex="-1" lwc:ref="viewer" onkeydown={handleViewerKey}>
+            <div class="stage">
+                <template lwc:if={currentIsPhoto}>
+                    <img class="stage__media" src={currentStory.mediaUrl} alt={currentAlt} />
+                </template>
+                <template lwc:if={currentIsVideo}>
+                    <video
+                        class="stage__media"
+                        lwc:ref="video"
+                        src={currentStory.mediaUrl}
+                        autoplay
+                        muted
+                        playsinline
+                        ontimeupdate={handleTimeUpdate}
+                        onended={next}
+                    ></video>
+                </template>
+
+                <button class="tap tap_prev" onclick={previous} aria-label="Previous moment"></button>
+                <button class="tap tap_next" onclick={next} aria-label="Next moment"></button>
+
+                <div class="chrome chrome_top">
+                    <div class="progress" aria-hidden="true">
+                        <template for:each={segments} for:item="segment">
+                            <span key={segment.key} class="progress__track">
+                                <span class="progress__fill" style={segment.style}></span>
+                            </span>
+                        </template>
+                    </div>
+                    <div class="author">
+                        <img class="author__photo" src={currentAuthor.photoUrl} alt="" />
+                        <span class="author__name">{currentAuthor.authorName}</span>
+                        <span class="author__time">{currentWhen}</span>
+                        <span class="author__spacer"></span>
+                        <template lwc:if={currentIsVideo}>
+                            <button class="icon-btn" onclick={toggleMute} aria-label={muteLabel}>
+                                <lightning-icon icon-name={muteIcon} size="x-small" variant="inverse" alternative-text=""></lightning-icon>
+                            </button>
+                        </template>
+                        <button class="icon-btn" onclick={closeViewer} aria-label="Close moments">
+                            <lightning-icon icon-name="utility:close" size="x-small" variant="inverse" alternative-text=""></lightning-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chrome chrome_bottom">
+                    <template lwc:if={currentStory.caption}>
+                        <p class="caption">{currentStory.caption}</p>
+                    </template>
+                    <template lwc:if={currentAuthor.isMe}>
+                        <div class="owner-actions">
+                            <button class="pill" onclick={openViewers}>
+                                <lightning-icon icon-name="utility:preview" size="xx-small" variant="inverse" alternative-text=""></lightning-icon>
+                                {seenByLabel}
+                            </button>
+                            <button class="pill pill_danger" onclick={deleteCurrent}>
+                                <lightning-icon icon-name="utility:delete" size="xx-small" variant="inverse" alternative-text=""></lightning-icon>
+                                Delete
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <template lwc:if={isViewersOpen}>
+                    <div class="sheet" role="region" aria-label="Seen by">
+                        <div class="sheet__header">
+                            <span class="sheet__title">{seenByLabel}</span>
+                            <button class="sheet__close" onclick={closeViewers} aria-label="Close seen by list">
+                                <lightning-icon icon-name="utility:close" size="x-small" alternative-text=""></lightning-icon>
+                            </button>
+                        </div>
+                        <template lwc:if={isViewersLoading}>
+                            <div class="uw-spinner"><lightning-spinner alternative-text="Loading viewers" size="small"></lightning-spinner></div>
+                        </template>
+                        <template lwc:else>
+                            <ul class="sheet__list">
+                                <template for:each={viewers} for:item="person">
+                                    <li key={person.key} class="sheet__row">
+                                        <img class="author__photo" src={person.photoUrl} alt="" />
+                                        <span class="sheet__name">{person.name}</span>
+                                        <span class="uw-meta">{person.when}</span>
+                                    </li>
+                                </template>
+                            </ul>
+                            <template lwc:if={noViewers}>
+                                <p class="uw-meta sheet__empty">No one has seen this yet.</p>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

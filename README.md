@@ -32,6 +32,28 @@ and Events come from a shared Outlook calendar, where RSVP adds the event to you
 own Outlook. Setup steps are in [MICROSOFT-SETUP.md](MICROSOFT-SETUP.md). Without a
 `.env`, everything runs on sample data as described below.
 
+## Salesforce version (`salesforce/`)
+
+`salesforce/` is the Salesforce build of the intranet (Lightning Web Components, Apex and
+custom objects), pulled from the TrailDev sandbox. The `UWPBC Intranet` app has these
+tabs: Home, Directory, Events, Ideas, Kudos, Files and Profile. Custom metadata *records*
+(for example the org chart) aren't in the repo because they hold staff data.
+
+**LIVE UNITED Moments email alerts.** When someone shares a Moment, every active Salesforce user
+gets an email, except the poster and anyone who opted out (`MomentAlerts`, queued from
+`StoryController.publish()`). Each poster triggers at most one email a day: a second moment
+while the first is still live doesn't email everyone again. People turn alerts off and on with
+the **Email me about new moments** toggle on the Moments card, which sets
+`User.Moments_Email_Opt_Out__c`. Emails only go out if the org's email deliverability
+(Setup → Deliverability) is set to **All email**.
+
+Deploy from the `salesforce/` folder:
+
+```
+cd salesforce
+sf project deploy start --target-org TrailDev --test-level RunSpecifiedTests --tests MomentAlertsTest --tests StoryControllerTest
+```
+
 ## What's real vs. illustrative
 
 - **Fully functional:** navigation between every page, the kudos wall (post + star),

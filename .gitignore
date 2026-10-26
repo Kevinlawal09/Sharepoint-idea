@@ -3,3 +3,5 @@ data/db.json
 .env
 .DS_Store
 Thumbs.db
+.sf/
+.sfdx/

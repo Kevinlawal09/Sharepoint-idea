@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Moments_Email_Opt_Out__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Checked when this person turned off emails about new LIVE UNITED Moments (the toggle on the intranet Moments card). Read by MomentAlerts.</description>
+    <inlineHelpText>When checked, this person doesn't get an email when a coworker shares a LIVE UNITED Moment.</inlineHelpText>
+    <label>Moments Email Opt Out</label>
+    <type>Checkbox</type>
+</CustomField>

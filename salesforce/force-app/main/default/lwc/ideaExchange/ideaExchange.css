@@ -1,0 +1,63 @@
+@import 'c/intranetStyles';
+
+.ideas {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.idea {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.idea__votes {
+    display: grid;
+    justify-items: center;
+    min-width: 64px;
+    padding: 10px 8px;
+    border-radius: 12px;
+    background: var(--uw-paper-2);
+}
+
+.idea__count {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--uw-blue);
+}
+
+.idea__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.idea__heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+}
+
+.idea__description {
+    white-space: pre-line;
+}
+
+.idea__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@media (max-width: 640px) {
+    .idea {
+        gap: 12px;
+    }
+
+    .idea__votes {
+        min-width: 52px;
+    }
+}

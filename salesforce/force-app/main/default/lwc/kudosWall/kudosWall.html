@@ -1,0 +1,57 @@
+<template>
+    <div class="uw-page">
+        <header class="uw-header">
+            <div>
+                <h1 class="uw-title">Kudos wall</h1>
+                <p class="uw-muted">Recognize a teammate. Everyone can see it, and anyone can add a star.</p>
+            </div>
+        </header>
+
+        <section class="uw-card uw-stack composer" aria-label="Post kudos">
+            <lightning-textarea
+                label="Your kudos"
+                value={message}
+                max-length="2000"
+                placeholder="Shout out someone who made your week easier"
+                onchange={handleMessage}
+            ></lightning-textarea>
+            <lightning-record-picker
+                label="Who is it for? (optional)"
+                placeholder="Search people"
+                object-api-name="User"
+                onchange={handleRecipient}
+            ></lightning-record-picker>
+            <div>
+                <button class="uw-btn uw-btn_gold" onclick={handlePost} disabled={cannotPost}>Post kudos</button>
+            </div>
+        </section>
+
+        <template lwc:if={error}>
+            <p class="uw-error" role="alert">{error}</p>
+        </template>
+
+        <template lwc:if={hasKudos}>
+            <section class="uw-grid" aria-label="Kudos">
+                <template for:each={kudos} for:item="k">
+                    <article key={k.id} class="uw-card uw-stack kudos">
+                        <p class="kudos__message">{k.message}</p>
+                        <p class="uw-meta">
+                            From <strong>{k.from}</strong>
+                            <template lwc:if={k.to}> to <strong>{k.to}</strong></template>
+                            · {k.when}
+                        </p>
+                        <div>
+                            <button class={k.starClass} data-id={k.id} aria-pressed={k.pressed} onclick={handleStar}>
+                                <span aria-hidden="true">★</span> {k.stars}
+                                <span class="slds-assistive-text">{k.starLabel}</span>
+                            </button>
+                        </div>
+                    </article>
+                </template>
+            </section>
+        </template>
+        <template lwc:elseif={isLoaded}>
+            <p class="uw-empty">No kudos yet. Be the first to post one.</p>
+        </template>
+    </div>
+</template>

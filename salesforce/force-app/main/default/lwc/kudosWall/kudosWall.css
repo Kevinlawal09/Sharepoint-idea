@@ -1,0 +1,16 @@
+@import 'c/intranetStyles';
+
+.composer {
+    border-left: 4px solid var(--uw-gold);
+}
+
+.kudos {
+    align-content: space-between;
+}
+
+.kudos__message {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    white-space: pre-line;
+}

@@ -1,0 +1,122 @@
+@import 'c/intranetStyles';
+
+.views {
+    display: flex;
+    gap: 8px;
+}
+
+.chart__hint {
+    margin-bottom: 8px;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filters__search {
+    flex: 1 1 280px;
+}
+
+.filters__dept {
+    flex: 0 1 260px;
+}
+
+.people {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.person {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.person__photo {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 3px solid var(--uw-paper-2);
+    object-fit: cover;
+    background: var(--uw-paper-2);
+}
+
+.person__initials {
+    display: grid;
+    place-items: center;
+    color: var(--uw-blue-deep);
+    font-size: 1.25rem;
+    font-weight: 800;
+    background: var(--uw-track);
+}
+
+.person_placeholder {
+    border-style: dashed;
+    box-shadow: none;
+}
+
+.person__body {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.person__name {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--uw-ink);
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+}
+
+.person__name:hover {
+    color: var(--uw-blue);
+    text-decoration: underline;
+}
+
+.person__name:focus-visible,
+.contact:focus-visible {
+    outline: 3px solid var(--uw-gold);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.person__title {
+    margin: 0;
+    color: var(--uw-muted);
+    font-size: 0.875rem;
+}
+
+.person__contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin-top: 6px;
+}
+
+.contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--uw-blue);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.contact:hover {
+    text-decoration: underline;
+}
+
+.contact lightning-icon {
+    --slds-c-icon-color-foreground-default: var(--uw-blue);
+}

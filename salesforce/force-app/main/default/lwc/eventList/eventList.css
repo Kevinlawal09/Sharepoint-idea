@@ -1,0 +1,62 @@
+@import 'c/intranetStyles';
+
+.event {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.event__date {
+    display: grid;
+    justify-items: center;
+    min-width: 64px;
+    padding: 10px 8px;
+    border-radius: 14px;
+    background: linear-gradient(160deg, var(--uw-blue), var(--uw-ocean));
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(14, 124, 134, 0.25);
+}
+
+.event__month {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--uw-gold);
+}
+
+.event__day {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.event__body {
+    flex: 1;
+    min-width: 0;
+    gap: 6px;
+}
+
+.event__details {
+    white-space: pre-line;
+}
+
+.event__rsvp {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+}
+
+@media (max-width: 640px) {
+    .event {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .event__rsvp {
+        width: 100%;
+        grid-auto-flow: column;
+        justify-content: start;
+        align-items: center;
+    }
+}

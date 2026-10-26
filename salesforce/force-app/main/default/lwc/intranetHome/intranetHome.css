@@ -1,0 +1,122 @@
+@import 'c/intranetStyles';
+
+/* Deep-sea to United Way blue to ocean teal, with a sunrise glow and waves along the bottom. */
+.hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--uw-radius);
+    background:
+        radial-gradient(520px 260px at 88% 8%, rgba(245, 166, 35, 0.45), transparent 65%),
+        radial-gradient(380px 200px at 70% 0%, rgba(255, 122, 89, 0.25), transparent 70%),
+        linear-gradient(135deg, var(--uw-navy) 0%, var(--uw-blue) 55%, var(--uw-ocean) 100%);
+    color: #ffffff;
+    box-shadow: 0 18px 40px rgba(10, 37, 64, 0.25);
+}
+
+.hero__content {
+    position: relative;
+    z-index: 1;
+    padding: 40px 36px 84px;
+}
+
+.hero__eyebrow {
+    margin: 0 0 10px;
+    color: var(--uw-gold);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.hero__title {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.hero__lede {
+    max-width: 54ch;
+    margin: 10px 0 0;
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.hero__btn {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+
+.hero__btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.hero__waves {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    width: 100%;
+    height: 72px;
+}
+
+.hero__wave_back {
+    fill: rgba(46, 196, 199, 0.35);
+}
+
+.hero__wave_mid {
+    fill: rgba(247, 241, 230, 0.45);
+}
+
+.hero__wave_front {
+    fill: var(--uw-sand);
+}
+
+.dept__icon {
+    --slds-c-icon-color-foreground-default: var(--uw-ocean);
+}
+
+.dept__link {
+    margin-top: 4px;
+    color: var(--uw-ocean);
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+@media (max-width: 640px) {
+    .hero__content {
+        padding: 28px 20px 64px;
+    }
+
+    .hero__title {
+        font-size: 1.6rem;
+    }
+
+    .hero__waves {
+        height: 48px;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .hero__wave_back {
+        animation: drift 14s ease-in-out infinite alternate;
+    }
+}
+
+@keyframes drift {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-24px);
+    }
+}

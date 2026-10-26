@@ -1,0 +1,68 @@
+<template>
+    <div class="uw-page">
+        <header class="uw-header">
+            <div>
+                <h1 class="uw-title">Idea exchange</h1>
+                <p class="uw-muted">Suggest an improvement and vote for the ones you want most. One vote per person.</p>
+            </div>
+        </header>
+
+        <section class="uw-card uw-stack" aria-label="Submit an idea">
+            <lightning-input
+                label="Idea title"
+                value={title}
+                max-length="80"
+                placeholder="Give it a short, clear name"
+                onchange={handleTitle}
+            ></lightning-input>
+            <lightning-textarea
+                label="Details (optional)"
+                value={description}
+                max-length="5000"
+                placeholder="What problem does it solve? Who would it help?"
+                onchange={handleDescription}
+            ></lightning-textarea>
+            <div>
+                <button class="uw-btn uw-btn_gold" onclick={handleSubmit} disabled={cannotSubmit}>Submit idea</button>
+            </div>
+        </section>
+
+        <template lwc:if={error}>
+            <p class="uw-error" role="alert">{error}</p>
+        </template>
+
+        <template lwc:if={hasIdeas}>
+            <ol class="ideas" aria-label="Ideas ranked by votes">
+                <template for:each={ideas} for:item="idea">
+                    <li key={idea.id} class="uw-card idea">
+                        <div class="idea__votes">
+                            <span class="idea__count">{idea.votes}</span>
+                            <span class="uw-meta">{idea.voteNoun}</span>
+                        </div>
+                        <div class="uw-stack idea__body">
+                            <div class="idea__heading">
+                                <h2 class="uw-card__title">{idea.title}</h2>
+                                <span class={idea.badgeClass}>{idea.status}</span>
+                            </div>
+                            <template lwc:if={idea.description}>
+                                <p class="uw-muted idea__description">{idea.description}</p>
+                            </template>
+                            <p class="uw-meta">Suggested by {idea.author} · {idea.when}</p>
+                            <div class="idea__actions">
+                                <button class={idea.voteClass} data-id={idea.id} onclick={handleVote} disabled={idea.voted}>
+                                    {idea.voteLabel}
+                                </button>
+                                <template lwc:if={canManage}>
+                                    <button class="uw-btn uw-btn_small uw-btn_ghost" data-id={idea.id} onclick={handleEdit}>Update status</button>
+                                </template>
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </ol>
+        </template>
+        <template lwc:elseif={isLoaded}>
+            <p class="uw-empty">No ideas yet. Got one? Submit it above.</p>
+        </template>
+    </div>
+</template>

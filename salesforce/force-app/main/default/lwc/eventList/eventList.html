@@ -1,0 +1,49 @@
+<template>
+    <div class="uw-page">
+        <header class="uw-header">
+            <div>
+                <h1 class="uw-title">Events</h1>
+                <p class="uw-muted">What's coming up. RSVP so organizers can plan.</p>
+            </div>
+            <template lwc:if={canManage}>
+                <button class="uw-btn" onclick={handleNewEvent}>New event</button>
+            </template>
+        </header>
+
+        <template lwc:if={error}>
+            <p class="uw-error" role="alert">{error}</p>
+        </template>
+
+        <template lwc:if={hasEvents}>
+            <div class="uw-stack">
+                <template for:each={events} for:item="evt">
+                    <article key={evt.id} class="uw-card event">
+                        <div class="event__date" aria-hidden="true">
+                            <span class="event__month">{evt.month}</span>
+                            <span class="event__day">{evt.day}</span>
+                        </div>
+                        <div class="uw-stack event__body">
+                            <h2 class="uw-card__title">{evt.name}</h2>
+                            <p class="uw-meta">
+                                {evt.time}
+                                <template lwc:if={evt.location}> · {evt.location}</template>
+                            </p>
+                            <template lwc:if={evt.details}>
+                                <p class="uw-muted event__details">{evt.details}</p>
+                            </template>
+                        </div>
+                        <div class="event__rsvp">
+                            <button class={evt.rsvpClass} data-id={evt.id} aria-pressed={evt.pressed} onclick={handleRsvp}>
+                                {evt.rsvpLabel}
+                            </button>
+                            <span class="uw-meta">{evt.goingLabel}</span>
+                        </div>
+                    </article>
+                </template>
+            </div>
+        </template>
+        <template lwc:elseif={isLoaded}>
+            <p class="uw-empty">No upcoming events right now. Check back soon.</p>
+        </template>
+    </div>
+</template>

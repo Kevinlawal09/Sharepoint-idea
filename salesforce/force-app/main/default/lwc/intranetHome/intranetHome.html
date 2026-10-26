@@ -1,0 +1,53 @@
+<template>
+    <div class="uw-page">
+        <section class="hero">
+            <div class="hero__content">
+                <p class="hero__eyebrow">LIVE UNITED · Palm Beach County</p>
+                <h1 class="hero__title">{greeting}</h1>
+                <p class="hero__lede">News, people, files and requests in one place, without leaving Salesforce.</p>
+                <div class="hero__actions">
+                    <template for:each={quickActions} for:item="action">
+                        <button key={action.id} class={action.className} data-id={action.id} onclick={handleQuickAction}>
+                            {action.label}
+                        </button>
+                    </template>
+                </div>
+            </div>
+            <svg class="hero__waves" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                <path class="hero__wave hero__wave_back" d="M0,64 C180,104 360,24 540,48 C720,72 900,112 1080,88 C1260,64 1350,40 1440,56 L1440,120 L0,120 Z"></path>
+                <path class="hero__wave hero__wave_mid" d="M0,84 C200,56 400,108 640,88 C880,68 1080,40 1280,72 C1360,84 1400,92 1440,88 L1440,120 L0,120 Z"></path>
+                <path class="hero__wave hero__wave_front" d="M0,100 C240,84 480,116 720,104 C960,92 1200,84 1440,100 L1440,120 L0,120 Z"></path>
+            </svg>
+        </section>
+
+        <c-intranet-stories></c-intranet-stories>
+
+        <section aria-labelledby="news-heading">
+            <h2 id="news-heading" class="uw-section-title">Latest news</h2>
+            <div class="uw-grid">
+                <template for:each={news} for:item="item">
+                    <article key={item.id} class="uw-card uw-stack">
+                        <span class="uw-badge">{item.departmentLabel}</span>
+                        <h3 class="uw-card__title">{item.title}</h3>
+                        <p class="uw-muted">{item.teaser}</p>
+                        <p class="uw-meta">{item.posted}</p>
+                    </article>
+                </template>
+            </div>
+        </section>
+
+        <section aria-labelledby="dept-heading">
+            <h2 id="dept-heading" class="uw-section-title">Departments</h2>
+            <div class="uw-grid">
+                <template for:each={departments} for:item="dept">
+                    <button key={dept.id} class="uw-card uw-tile" data-id={dept.id} onclick={openDepartment}>
+                        <lightning-icon icon-name={dept.icon} size="small" alternative-text="" class="dept__icon"></lightning-icon>
+                        <span class="uw-card__title">{dept.name}</span>
+                        <span class="uw-muted">{dept.tagline}</span>
+                        <span class="dept__link">Open files →</span>
+                    </button>
+                </template>
+            </div>
+        </section>
+    </div>
+</template>

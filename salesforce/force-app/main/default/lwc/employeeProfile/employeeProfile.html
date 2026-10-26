@@ -1,0 +1,159 @@
+<template>
+    <div class="uw-page">
+        <template lwc:if={error}>
+            <p class="uw-error" role="alert">{error}</p>
+        </template>
+
+        <template lwc:if={profile}>
+            <section class="uw-card hero">
+                <template lwc:if={profile.photoUrl}>
+                    <img class="hero__photo" src={profile.photoUrl} alt="" />
+                </template>
+                <template lwc:else>
+                    <span class="hero__photo initials initials_large" aria-hidden="true">{profile.initials}</span>
+                </template>
+                <div class="hero__body">
+                    <h1 class="uw-title">{profile.name}</h1>
+                    <template lwc:if={profile.title}>
+                        <p class="hero__title">{profile.title}</p>
+                    </template>
+                    <template lwc:if={profile.department}>
+                        <span class="uw-badge">{profile.department}</span>
+                    </template>
+                    <template lwc:if={profile.isPlaceholder}>
+                        <p class="uw-muted">{profile.firstName} isn't on Salesforce yet. Their photo, contact details, LIVE UNITED Moments and kudos will show up here once they have a login.</p>
+                    </template>
+                    <template lwc:if={profile.userId}>
+                    <div class="hero__actions">
+                        <template lwc:if={profile.email}>
+                            <a class="uw-btn uw-btn_small" href={mailto}>Email</a>
+                            <a class="uw-btn uw-btn_small uw-btn_ghost" href={teamsChat} target="_blank" rel="noopener">Teams chat</a>
+                        </template>
+                        <template lwc:if={profile.phone}>
+                            <a class="uw-btn uw-btn_small uw-btn_ghost" href={tel}>Call {profile.phone}</a>
+                        </template>
+                        <template lwc:if={profile.isMe}>
+                            <button class="uw-btn uw-btn_small uw-btn_gold" onclick={openEditor}>Edit my profile</button>
+                        </template>
+                        <template lwc:else>
+                            <button class="uw-btn uw-btn_small uw-btn_gold" onclick={giveKudos}>Give kudos</button>
+                        </template>
+                    </div>
+                    </template>
+                </div>
+            </section>
+
+            <template lwc:if={profile.userId}>
+                <c-intranet-stories user-id={profile.userId}></c-intranet-stories>
+            </template>
+
+            <div class="columns">
+                <section class="uw-card uw-stack" aria-labelledby="about-heading">
+                    <h2 id="about-heading" class="uw-section-title">About {profile.firstName}</h2>
+                    <template lwc:if={profile.aboutMe}>
+                        <p class="about">{profile.aboutMe}</p>
+                    </template>
+                    <template lwc:else>
+                        <p class="uw-muted">{aboutPlaceholder}</p>
+                    </template>
+                    <template lwc:if={hasTopics}>
+                        <h3 class="subhead">Ask me about</h3>
+                        <ul class="chips">
+                            <template for:each={topics} for:item="topic">
+                                <li key={topic} class="uw-badge uw-badge_gold">{topic}</li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:if={profile.mobile}>
+                        <p class="uw-meta">Mobile: <a href={mobileTel}>{profile.mobile}</a></p>
+                    </template>
+                </section>
+
+                <section class="uw-card uw-stack" aria-labelledby="team-heading">
+                    <h2 id="team-heading" class="uw-section-title">Team</h2>
+                    <template lwc:if={profile.manager}>
+                        <h3 class="subhead">Reports to</h3>
+                        <button class="person" data-id={profile.manager.id} onclick={openPerson}>
+                            <template lwc:if={profile.manager.photoUrl}>
+                                <img class="person__photo" src={profile.manager.photoUrl} alt="" />
+                            </template>
+                            <template lwc:else>
+                                <span class="person__photo initials" aria-hidden="true">{profile.manager.initials}</span>
+                            </template>
+                            <span>
+                                <span class="person__name">{profile.manager.name}</span>
+                                <span class="uw-meta person__title">{profile.manager.title}</span>
+                            </span>
+                        </button>
+                    </template>
+                    <template lwc:if={hasReports}>
+                        <h3 class="subhead">Direct reports ({reportCount})</h3>
+                        <template for:each={profile.directReports} for:item="report">
+                            <button key={report.id} class="person" data-id={report.id} onclick={openPerson}>
+                                <template lwc:if={report.photoUrl}>
+                                    <img class="person__photo" src={report.photoUrl} alt="" />
+                                </template>
+                                <template lwc:else>
+                                    <span class="person__photo initials" aria-hidden="true">{report.initials}</span>
+                                </template>
+                                <span>
+                                    <span class="person__name">{report.name}</span>
+                                    <span class="uw-meta person__title">{report.title}</span>
+                                </span>
+                            </button>
+                        </template>
+                    </template>
+                    <template lwc:if={noTeam}>
+                        <p class="uw-muted">No reporting line set yet.</p>
+                    </template>
+                </section>
+            </div>
+
+            <template lwc:if={profile.userId}>
+            <section class="uw-card uw-stack" aria-labelledby="kudos-heading">
+                <h2 id="kudos-heading" class="uw-section-title">Kudos received</h2>
+                <template lwc:if={hasKudos}>
+                    <template for:each={kudos} for:item="k">
+                        <blockquote key={k.id} class="kudos">
+                            <p class="kudos__message">{k.message}</p>
+                            <p class="uw-meta">From {k.fromName} · {k.when}</p>
+                        </blockquote>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <p class="uw-muted">No kudos yet.</p>
+                </template>
+            </section>
+            </template>
+        </template>
+    </div>
+
+    <template lwc:if={isEditing}>
+        <section role="dialog" aria-modal="true" aria-labelledby="edit-heading" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <div class="slds-modal__header">
+                    <h2 id="edit-heading" class="slds-modal__title">Edit my profile</h2>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium uw-stack">
+                    <lightning-textarea label="About me" name="aboutMe" value={draft.aboutMe} max-length="1000" onchange={handleDraft}></lightning-textarea>
+                    <lightning-input
+                        label="Ask me about"
+                        name="askMeAbout"
+                        value={draft.askMeAbout}
+                        max-length="255"
+                        field-level-help="Separate topics with commas, e.g. Salesforce, VITA, pickleball"
+                        onchange={handleDraft}
+                    ></lightning-input>
+                    <lightning-input label="Work phone" name="phone" type="tel" value={draft.phone} onchange={handleDraft}></lightning-input>
+                    <lightning-input label="Mobile" name="mobile" type="tel" value={draft.mobile} onchange={handleDraft}></lightning-input>
+                    <p class="uw-meta">To change your photo, update it on your Salesforce profile (click your avatar in the top right).</p>
+                </div>
+                <div class="slds-modal__footer">
+                    <button class="uw-btn uw-btn_ghost" onclick={closeEditor} disabled={isSaving}>Cancel</button>
+                    <button class="uw-btn uw-btn_gold" onclick={saveProfile} disabled={isSaving}>Save</button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </template>
+</template>

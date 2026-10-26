@@ -1,0 +1,109 @@
+<template>
+    <div class="uw-page">
+        <header class="uw-header">
+            <div>
+                <h1 class="uw-title">Staff directory</h1>
+                <p class="uw-muted">Find a coworker by name, role or department. {countLabel}</p>
+            </div>
+        </header>
+
+        <nav class="views" aria-label="Staff views">
+            <button class={directoryTabClass} aria-pressed={isDirectoryView} data-view="directory" onclick={switchView}>Directory</button>
+            <button class={chartTabClass} aria-pressed={isChartView} data-view="chart" onclick={switchView}>Org chart</button>
+        </nav>
+
+        <template lwc:if={isChartView}>
+            <template lwc:if={hasChart}>
+                <section class="uw-card chart" aria-label="Org chart">
+                    <p class="uw-meta chart__hint">Select a name to open their profile.</p>
+                    <lightning-tree items={orgChart} onselect={handleChartSelect}></lightning-tree>
+                </section>
+            </template>
+            <template lwc:elseif={showChartEmpty}>
+                <p class="uw-empty">No reporting lines are set up yet. Add each person's Manager on their Salesforce user record.</p>
+            </template>
+        </template>
+
+        <template lwc:if={isDirectoryView}>
+        <div class="filters">
+            <lightning-input
+                class="filters__search"
+                type="search"
+                label="Search staff"
+                variant="label-hidden"
+                placeholder="Search by name, title or email"
+                value={search}
+                onchange={handleSearch}
+            ></lightning-input>
+            <lightning-combobox
+                class="filters__dept"
+                label="Department"
+                variant="label-hidden"
+                placeholder="All departments"
+                options={departmentOptions}
+                value={department}
+                onchange={handleDepartment}
+            ></lightning-combobox>
+        </div>
+        </template>
+
+        <template lwc:if={error}>
+            <p class="uw-error" role="alert">{error}</p>
+        </template>
+
+        <template lwc:if={isLoading}>
+            <div class="uw-spinner"><lightning-spinner alternative-text="Loading staff" size="medium"></lightning-spinner></div>
+        </template>
+
+        <template lwc:if={showDirectory}>
+            <ul class="uw-grid people" aria-label="Staff">
+                <template for:each={visiblePeople} for:item="person">
+                    <li key={person.id} class={person.cardClass}>
+                        <template lwc:if={person.photoUrl}>
+                            <img class="person__photo" src={person.photoUrl} alt="" />
+                        </template>
+                        <template lwc:else>
+                            <span class="person__photo person__initials" aria-hidden="true">{person.initials}</span>
+                        </template>
+                        <div class="person__body">
+                            <button class="person__name" data-id={person.id} onclick={openProfile}>{person.name}</button>
+                            <template lwc:if={person.isPlaceholder}>
+                                <span class="uw-badge uw-badge_muted">Not on Salesforce yet</span>
+                            </template>
+                            <template lwc:if={person.title}>
+                                <p class="person__title">{person.title}</p>
+                            </template>
+                            <template lwc:if={person.department}>
+                                <span class="uw-badge">{person.department}</span>
+                            </template>
+                            <template lwc:if={person.managerName}>
+                                <p class="uw-meta">Reports to {person.managerName}</p>
+                            </template>
+                            <div class="person__contact">
+                                <template lwc:if={person.email}>
+                                    <a href={person.mailto} class="contact">
+                                        <lightning-icon icon-name="utility:email" size="xx-small" alternative-text=""></lightning-icon>
+                                        Email
+                                    </a>
+                                    <a href={person.teamsChat} target="_blank" rel="noopener" class="contact">
+                                        <lightning-icon icon-name="utility:chat" size="xx-small" alternative-text=""></lightning-icon>
+                                        Teams
+                                    </a>
+                                </template>
+                                <template lwc:if={person.phone}>
+                                    <a href={person.tel} class="contact">
+                                        <lightning-icon icon-name="utility:call" size="xx-small" alternative-text=""></lightning-icon>
+                                        {person.phone}
+                                    </a>
+                                </template>
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+        </template>
+        <template lwc:elseif={showNoMatches}>
+            <p class="uw-empty">No one matches that search.</p>
+        </template>
+    </div>
+</template>
