@@ -7,6 +7,26 @@
     <description>Intranet admins (comms, HR, office managers): create events, set idea status, moderate kudos, see all PTO requests. Assign together with UWPBC Intranet User.</description>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Intranet_Celebration__c.Celebration_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Intranet_Celebration__c.Headline__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Intranet_Celebration__c.Person__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Intranet_Celebration__c.Type__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Intranet_Event__c.Details__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -27,6 +47,15 @@
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
     <label>UWPBC Intranet Admin</label>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>true</modifyAllRecords>
+        <object>Intranet_Celebration__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
     <objectPermissions>
         <allowCreate>true</allowCreate>
         <allowDelete>true</allowDelete>
@@ -63,4 +92,8 @@
         <object>PTO_Request__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
+    <tabSettings>
+        <tab>Intranet_Celebration__c</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
 </PermissionSet>

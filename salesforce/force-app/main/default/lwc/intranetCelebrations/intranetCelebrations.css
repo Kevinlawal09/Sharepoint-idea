@@ -1,0 +1,96 @@
+@import 'c/intranetStyles';
+
+/* Birthday card: warm sunrise wash so it stands apart from the regular cards. */
+.celebration {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 20px;
+    margin-bottom: 16px;
+    background:
+        radial-gradient(420px 160px at 0% 0%, rgba(245, 166, 35, 0.22), transparent 70%),
+        radial-gradient(360px 160px at 100% 100%, rgba(0, 160, 175, 0.14), transparent 70%),
+        var(--uw-surface);
+    border-top: 4px solid var(--uw-gold);
+}
+
+.celebration__photo-wrap {
+    position: relative;
+    flex: none;
+}
+
+.celebration__photo {
+    display: block;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 3px var(--uw-surface), 0 0 0 6px var(--uw-gold);
+}
+
+.celebration__emoji {
+    position: absolute;
+    right: -6px;
+    bottom: -4px;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.celebration__body {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.celebration__eyebrow {
+    margin: 0 0 2px;
+    color: var(--uw-gold-deep);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.celebration__headline {
+    margin: 0 0 4px;
+    color: var(--uw-navy);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.celebration__actions {
+    flex: none;
+}
+
+/* Confetti: a short burst over the page, then gone. */
+.confetti {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.confetti__piece {
+    position: absolute;
+    top: -20px;
+    width: 9px;
+    height: 14px;
+    border-radius: 2px;
+    opacity: 0.95;
+    animation-name: fall;
+    animation-timing-function: cubic-bezier(0.25, 0.6, 0.45, 1);
+    animation-fill-mode: forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translate(var(--drift), 105vh) rotate(var(--spin));
+        opacity: 0.6;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .confetti {
+        display: none;
+    }
+}

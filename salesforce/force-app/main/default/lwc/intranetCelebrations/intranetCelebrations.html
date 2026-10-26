@@ -1,0 +1,57 @@
+<template>
+    <template for:each={celebrations} for:item="item">
+        <section key={item.id} class="uw-card celebration" aria-label={item.headline}>
+            <span class="celebration__photo-wrap">
+                <img class="celebration__photo" src={item.photoUrl} alt="" />
+                <span class="celebration__emoji" aria-hidden="true">{item.emoji}</span>
+            </span>
+            <div class="celebration__body">
+                <p class="celebration__eyebrow">{item.eyebrow}</p>
+                <h2 class="celebration__headline">{item.headline}</h2>
+                <p class="uw-muted">{item.summary}</p>
+            </div>
+            <div class="celebration__actions">
+                <template lwc:if={item.isMe}>
+                    <button class="uw-btn" onclick={openWishes}>See your wishes</button>
+                </template>
+                <template lwc:else>
+                    <button class="uw-btn uw-btn_gold" data-id={item.id} onclick={openSign}>{item.signLabel}</button>
+                </template>
+            </div>
+        </section>
+    </template>
+
+    <!-- Sign the card -->
+    <template lwc:if={signing}>
+        <section role="dialog" aria-modal="true" aria-labelledby="sign-heading" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <div class="slds-modal__header">
+                    <h2 id="sign-heading" class="slds-modal__title">Sign {signing.firstName}'s card</h2>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium uw-stack">
+                    <lightning-textarea
+                        label="Your note"
+                        value={note}
+                        max-length="2000"
+                        placeholder={notePlaceholder}
+                        onchange={handleNote}
+                    ></lightning-textarea>
+                    <p class="uw-meta">{signing.firstName} sees every note, and it also shows on the Kudos wall.</p>
+                </div>
+                <div class="slds-modal__footer">
+                    <button class="uw-btn uw-btn_ghost" onclick={closeSign} disabled={isSaving}>Cancel</button>
+                    <button class="uw-btn uw-btn_gold" onclick={submitSign} disabled={isSaving}>Sign the card</button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </template>
+
+    <template lwc:if={showConfetti}>
+        <div class="confetti" aria-hidden="true">
+            <template for:each={confetti} for:item="piece">
+                <span key={piece.key} class="confetti__piece" style={piece.style}></span>
+            </template>
+        </div>
+    </template>
+</template>
