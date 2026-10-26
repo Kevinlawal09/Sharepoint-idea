@@ -12,6 +12,7 @@ import getViewers from '@salesforce/apex/StoryController.getViewers';
 import publishCaptured from '@salesforce/apex/StoryController.publishCaptured';
 import getMomentEmails from '@salesforce/apex/StoryController.getMomentEmails';
 import setMomentEmails from '@salesforce/apex/StoryController.setMomentEmails';
+import toggleLike from '@salesforce/apex/StoryController.toggleLike';
 import { errorMessage, showToast, timeAgo } from 'c/intranetUtils';
 
 const PHOTO_MS = 5000;
@@ -64,6 +65,8 @@ export default class IntranetStories extends LightningElement {
     muted = true;
     timer;
     focusViewer = false;
+
+    isLiking = false;
 
     // Seen-by sheet
     isViewersOpen = false;
@@ -432,6 +435,33 @@ export default class IntranetStories extends LightningElement {
         return `Seen by ${count}`;
     }
 
+    get likeClass() {
+        return `pill pill_like${this.currentStory?.liked ? ' pill_liked' : ''}`;
+    }
+
+    get likeHeart() {
+        return this.currentStory?.liked ? '♥' : '♡';
+    }
+
+    get likeCountText() {
+        const count = this.currentStory?.likeCount || 0;
+        return count ? String(count) : 'Like';
+    }
+
+    get likeLabel() {
+        const count = this.currentStory?.likeCount || 0;
+        return `${this.currentStory?.liked ? 'Unlike' : 'Like'} this moment (${count} ${count === 1 ? 'like' : 'likes'})`;
+    }
+
+    get likePressed() {
+        return this.currentStory?.liked ? 'true' : 'false';
+    }
+
+    get ownerLikeLabel() {
+        const count = this.currentStory?.likeCount || 0;
+        return `${count} ${count === 1 ? 'like' : 'likes'}`;
+    }
+
     get muteLabel() {
         return this.muted ? 'Unmute video' : 'Mute video';
     }
@@ -551,6 +581,29 @@ export default class IntranetStories extends LightningElement {
     firstUnseenIndex(author) {
         const index = author.stories.findIndex((story) => !story.seen);
         return index === -1 ? 0 : index;
+    }
+
+    // ----------------------------------------------------------------- Likes
+
+    async toggleLikeCurrent() {
+        const story = this.currentStory;
+        this.isLiking = true;
+        try {
+            const result = await toggleLike({ storyId: story.id });
+            this.updateViewingStory(story.id, { liked: result.liked, likeCount: result.likeCount });
+        } catch (e) {
+            showToast(this, 'Could not update your like', errorMessage(e), 'error');
+        } finally {
+            this.isLiking = false;
+        }
+    }
+
+    /** Patches one story in the viewer snapshot, so a like shows right away without reshuffling. */
+    updateViewingStory(storyId, changes) {
+        this.viewing = this.viewing.map((author) => ({
+            ...author,
+            stories: author.stories.map((story) => (story.id === storyId ? { ...story, ...changes } : story))
+        }));
     }
 
     // ------------------------------------------------------ Owner controls

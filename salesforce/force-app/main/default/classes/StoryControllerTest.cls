@@ -133,6 +133,56 @@ private class StoryControllerTest {
     }
 
     @IsTest
+    static void coworkersCanLikeAndUnlikeMoments() {
+        User poster = IntranetTestUtil.intranetUser('Poster');
+        User fan = IntranetTestUtil.intranetUser('Fan');
+        User other = IntranetTestUtil.intranetUser('Other');
+        Id storyId;
+        System.runAs(poster) {
+            storyId = postStory('Volunteer day!', 'beach-cleanup.jpg');
+        }
+
+        System.runAs(fan) {
+            StoryController.markViewed(storyId);
+            StoryController.LikeResult liked = StoryController.toggleLike(storyId);
+            Assert.isTrue(liked.liked);
+            Assert.areEqual(1, liked.likeCount);
+        }
+        System.runAs(other) {
+            StoryController.markViewed(storyId);
+            Assert.areEqual(2, StoryController.toggleLike(storyId).likeCount);
+            StoryController.LikeResult unliked = StoryController.toggleLike(storyId);
+            Assert.isFalse(unliked.liked, 'A second tap unlikes');
+            Assert.areEqual(1, unliked.likeCount);
+
+            StoryController.StoryItem seen = StoryController.getActiveStories()[0].stories[0];
+            Assert.areEqual(1, seen.likeCount, 'Everyone sees the like count');
+            Assert.isFalse(seen.liked);
+        }
+        System.runAs(fan) {
+            Assert.isTrue(StoryController.getActiveStories()[0].stories[0].liked, 'Your own like shows as liked');
+        }
+
+        System.runAs(poster) {
+            try {
+                StoryController.toggleLike(storyId);
+                Assert.fail('Expected posters not to like their own moments');
+            } catch (AuraHandledException e) {
+                Assert.isTrue(e.getMessage().contains('your own'));
+            }
+            Map<String, Boolean> likedByName = new Map<String, Boolean>();
+            for (StoryController.Viewer viewer : StoryController.getViewers(storyId)) {
+                likedByName.put(viewer.name, viewer.liked);
+            }
+            Assert.isTrue(likedByName.get('Test Fan'), 'The poster sees who liked it');
+            Assert.isFalse(likedByName.get('Test Other'));
+
+            StoryController.deleteStory(storyId);
+        }
+        Assert.areEqual(0, [SELECT COUNT() FROM Story_Like__c], 'Likes are deleted with the moment');
+    }
+
+    @IsTest
     static void draftsCanBeDiscardedAndAreHidden() {
         System.runAs(IntranetTestUtil.intranetUser()) {
             Id draftId = StoryController.createDraft();

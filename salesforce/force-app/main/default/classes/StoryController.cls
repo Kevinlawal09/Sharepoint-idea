@@ -24,6 +24,13 @@ public with sharing class StoryController {
         @AuraEnabled public Datetime createdDate;
         @AuraEnabled public Boolean seen;
         @AuraEnabled public Integer viewCount;
+        @AuraEnabled public Integer likeCount;
+        @AuraEnabled public Boolean liked;
+    }
+
+    public class LikeResult {
+        @AuraEnabled public Boolean liked;
+        @AuraEnabled public Integer likeCount;
     }
 
     public class AuthorStories implements Comparable {
@@ -55,6 +62,7 @@ public with sharing class StoryController {
         @AuraEnabled public String name;
         @AuraEnabled public String photoUrl;
         @AuraEnabled public Datetime viewedAt;
+        @AuraEnabled public Boolean liked;
     }
 
     @AuraEnabled(cacheable=true)
@@ -64,7 +72,8 @@ public with sharing class StoryController {
         List<Story__c> rows = [
             SELECT Id, Caption__c, Media_Type__c, Content_Version_Id__c, CreatedDate,
                 CreatedById, CreatedBy.Name, CreatedBy.SmallPhotoUrl,
-                (SELECT Id FROM Views__r WHERE CreatedById = :me)
+                (SELECT Id FROM Views__r WHERE CreatedById = :me),
+                (SELECT Id FROM Likes__r WHERE CreatedById = :me)
             FROM Story__c
             WHERE Expires_At__c > :now
             WITH USER_MODE
@@ -73,12 +82,15 @@ public with sharing class StoryController {
         ];
 
         Set<Id> myStoryIds = new Set<Id>();
+        Set<Id> allStoryIds = new Set<Id>();
         for (Story__c row : rows) {
+            allStoryIds.add(row.Id);
             if (row.CreatedById == me) {
                 myStoryIds.add(row.Id);
             }
         }
         Map<Id, Integer> viewCounts = StoryViewerAccess.countViews(myStoryIds);
+        Map<Id, Integer> likeCounts = StoryViewerAccess.countLikes(allStoryIds);
 
         Map<Id, AuthorStories> byAuthor = new Map<Id, AuthorStories>();
         for (Story__c row : rows) {
@@ -100,6 +112,8 @@ public with sharing class StoryController {
             story.createdDate = row.CreatedDate;
             story.seen = author.isMe || !row.Views__r.isEmpty();
             story.viewCount = author.isMe ? viewCounts.get(row.Id) : null;
+            story.likeCount = likeCounts.get(row.Id);
+            story.liked = !row.Likes__r.isEmpty();
 
             author.stories.add(story);
             author.latest = row.CreatedDate;
@@ -211,6 +225,41 @@ public with sharing class StoryController {
                 throw e;
             }
         }
+    }
+
+    /** Likes or unlikes a coworker's moment for the current user. You can't like your own. */
+    @AuraEnabled
+    public static LikeResult toggleLike(Id storyId) {
+        Id me = UserInfo.getUserId();
+        List<Story__c> stories = [
+            SELECT CreatedById, Expires_At__c FROM Story__c WHERE Id = :storyId WITH USER_MODE
+        ];
+        if (stories.isEmpty() || stories[0].Expires_At__c == null || stories[0].Expires_At__c <= System.now()) {
+            throw newError('This moment has washed away.');
+        }
+        if (stories[0].CreatedById == me) {
+            throw newError('You can\'t like your own moment.');
+        }
+
+        String key = String.valueOf(storyId) + ':' + me;
+        List<Story_Like__c> mine = [SELECT Id FROM Story_Like__c WHERE Unique_Key__c = :key WITH USER_MODE];
+        if (mine.isEmpty()) {
+            try {
+                Database.insert(new Story_Like__c(Story__c = storyId, Unique_Key__c = key), AccessLevel.USER_MODE);
+            } catch (DmlException e) {
+                // A double tap can race the unique key; the like is already recorded.
+                if (e.getDmlType(0) != StatusCode.DUPLICATE_VALUE) {
+                    throw e;
+                }
+            }
+        } else {
+            Database.delete(mine, AccessLevel.USER_MODE);
+        }
+
+        LikeResult result = new LikeResult();
+        result.liked = mine.isEmpty();
+        result.likeCount = StoryViewerAccess.countLikes(new Set<Id>{ storyId }).get(storyId);
+        return result;
     }
 
     /** Who saw your story. Only the person who posted it can ask. */

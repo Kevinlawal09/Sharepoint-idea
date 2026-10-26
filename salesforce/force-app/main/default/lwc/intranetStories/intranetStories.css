@@ -358,6 +358,23 @@
     background: rgba(227, 27, 35, 0.75);
 }
 
+.pill_static {
+    cursor: default;
+}
+
+.pill_like {
+    font-size: 0.95rem;
+}
+
+.pill_liked {
+    background: rgba(227, 27, 35, 0.85);
+}
+
+.sheet__liked {
+    color: #e31b23;
+    font-size: 1rem;
+}
+
 /* Seen-by sheet */
 .sheet {
     position: absolute;

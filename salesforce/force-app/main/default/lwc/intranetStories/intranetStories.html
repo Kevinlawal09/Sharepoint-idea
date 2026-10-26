@@ -202,9 +202,18 @@
                                 <lightning-icon icon-name="utility:preview" size="xx-small" variant="inverse" alternative-text=""></lightning-icon>
                                 {seenByLabel}
                             </button>
+                            <span class="pill pill_static"><span aria-hidden="true">♥</span> {ownerLikeLabel}</span>
                             <button class="pill pill_danger" onclick={deleteCurrent}>
                                 <lightning-icon icon-name="utility:delete" size="xx-small" variant="inverse" alternative-text=""></lightning-icon>
                                 Delete
+                            </button>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="owner-actions">
+                            <button class={likeClass} onclick={toggleLikeCurrent} aria-pressed={likePressed} aria-label={likeLabel} disabled={isLiking}>
+                                <span aria-hidden="true">{likeHeart}</span>
+                                {likeCountText}
                             </button>
                         </div>
                     </template>
@@ -227,6 +236,9 @@
                                     <li key={person.key} class="sheet__row">
                                         <img class="author__photo" src={person.photoUrl} alt="" />
                                         <span class="sheet__name">{person.name}</span>
+                                        <template lwc:if={person.liked}>
+                                            <span class="sheet__liked" title="Liked this moment">♥<span class="slds-assistive-text">Liked</span></span>
+                                        </template>
                                         <span class="uw-meta">{person.when}</span>
                                     </li>
                                 </template>

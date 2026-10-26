@@ -1,5 +1,5 @@
 /**
- * Deletes expired stories, drafts abandoned for more than a day, their view rows and
+ * Deletes expired stories, drafts abandoned for more than a day, their view and like rows and
  * their files, so story media doesn't pile up in Salesforce file storage.
  *
  * Scheduled hourly through StoryCleanupJob (see scripts/apex/schedule-story-cleanup.apex).
@@ -42,6 +42,7 @@ public without sharing class StoryCleanup implements Callable {
         }
         deleteFiles(documentIds);
         delete [SELECT Id FROM Story_View__c WHERE Story__c IN :storyIds];
+        delete [SELECT Id FROM Story_Like__c WHERE Story__c IN :storyIds];
         delete [SELECT Id FROM Story__c WHERE Id IN :storyIds];
     }
 
