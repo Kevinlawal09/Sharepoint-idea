@@ -15,8 +15,17 @@ private class MomentAlertsTest {
         return ids;
     }
 
+    private static Messaging.SingleEmailMessage sentTo(Id userId) {
+        for (Messaging.SingleEmailMessage message : MomentAlerts.sent) {
+            if (message.getTargetObjectId() == userId) {
+                return message;
+            }
+        }
+        return null;
+    }
+
     @IsTest
-    static void coworkersAreEmailedExceptPosterAndOptOuts() {
+    static void coworkersAreEmailedAndPosterGetsConfirmation() {
         User poster = IntranetTestUtil.intranetUser('Poster');
         User coworker = IntranetTestUtil.intranetUser('Coworker');
         User optedOut = IntranetTestUtil.intranetUser('OptedOut');
@@ -33,15 +42,39 @@ private class MomentAlertsTest {
 
         Set<Id> told = recipients();
         Assert.isTrue(told.contains(coworker.Id), 'Active coworkers get the email');
-        Assert.isFalse(told.contains(poster.Id), 'The poster is not emailed about their own moment');
         Assert.isFalse(told.contains(optedOut.Id), 'People who opted out are skipped');
         Assert.isFalse(told.contains(departed.Id), 'Inactive users are skipped');
 
-        Messaging.SingleEmailMessage message = MomentAlerts.sent[0];
-        Assert.areEqual('Test Poster shared a LIVE UNITED Moment', message.getSubject());
-        Assert.isTrue(message.getHtmlBody().contains('Beach &lt;cleanup&gt; day!'), 'Captions are escaped in the HTML email');
-        Assert.isTrue(message.getPlainTextBody().contains('Email me about new moments'), 'Every email says how to opt out');
-        Assert.isFalse(message.getSaveAsActivity());
+        Messaging.SingleEmailMessage alert = sentTo(coworker.Id);
+        Assert.areEqual('Test Poster shared a LIVE UNITED Moment', alert.getSubject());
+        Assert.isTrue(alert.getHtmlBody().contains('Beach &lt;cleanup&gt; day!'), 'Captions are escaped in the HTML email');
+        Assert.isTrue(alert.getPlainTextBody().contains('Email me about new moments'), 'Every email says how to opt out');
+        Assert.isFalse(alert.getSaveAsActivity());
+
+        Messaging.SingleEmailMessage confirmation = sentTo(poster.Id);
+        Assert.isNotNull(confirmation, 'The poster gets a confirmation');
+        Assert.areEqual('Your LIVE UNITED Moment is live', confirmation.getSubject());
+        Integer coworkersTold = MomentAlerts.sent.size() - 1;
+        String expected = 'We let ' + coworkersTold + (coworkersTold == 1 ? ' coworker' : ' coworkers') + ' know by email.';
+        Assert.isTrue(confirmation.getPlainTextBody().contains(expected), 'The confirmation counts everyone emailed: ' + confirmation.getPlainTextBody());
+        Assert.isTrue(confirmation.getPlainTextBody().contains('washes away at'), 'The confirmation says when it expires');
+    }
+
+    @IsTest
+    static void postersWhoOptedOutGetNoConfirmation() {
+        User poster = IntranetTestUtil.intranetUser('Poster');
+        User coworker = IntranetTestUtil.intranetUser('Coworker');
+        poster.Moments_Email_Opt_Out__c = true;
+        update poster;
+
+        Test.startTest();
+        System.runAs(poster) {
+            postMoment(null);
+        }
+        Test.stopTest();
+
+        Assert.isNull(sentTo(poster.Id), 'Opting out covers the confirmation too');
+        Assert.isNotNull(sentTo(coworker.Id), 'Coworkers are still told');
     }
 
     @IsTest
