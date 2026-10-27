@@ -45,6 +45,11 @@
         <field>Intranet_Idea__c.Status__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>User.Moments_Email_Opt_Out__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
     <label>UWPBC Intranet Admin</label>
     <objectPermissions>
